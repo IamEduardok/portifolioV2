@@ -79,10 +79,39 @@ export class App implements AfterViewInit, OnDestroy {
     const context = canvas.getContext('2d');
     if (!context) return;
 
-    canvas.width = 72;
-    canvas.height = 88;
+    const stage = this.portraitStage?.nativeElement;
+    const pixelWidth = 84;
+    const stageRatio = stage ? stage.clientWidth / stage.clientHeight : 0.82;
+    const pixelHeight = Math.round(pixelWidth / stageRatio);
+    const imageRatio = image.naturalWidth / image.naturalHeight;
+    const canvasRatio = pixelWidth / pixelHeight;
+    let sourceX = 0;
+    let sourceY = 0;
+    let sourceWidth = image.naturalWidth;
+    let sourceHeight = image.naturalHeight;
+
+    if (imageRatio > canvasRatio) {
+      sourceWidth = image.naturalHeight * canvasRatio;
+      sourceX = (image.naturalWidth - sourceWidth) * 0.52;
+    } else {
+      sourceHeight = image.naturalWidth / canvasRatio;
+      sourceY = (image.naturalHeight - sourceHeight) * 0.5;
+    }
+
+    canvas.width = pixelWidth;
+    canvas.height = pixelHeight;
     context.imageSmoothingEnabled = false;
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    context.drawImage(
+      image,
+      sourceX,
+      sourceY,
+      sourceWidth,
+      sourceHeight,
+      0,
+      0,
+      canvas.width,
+      canvas.height,
+    );
   }
 
   protected movePixelReveal(event: PointerEvent): void {
