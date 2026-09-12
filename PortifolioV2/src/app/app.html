@@ -1,153 +1,174 @@
 <main>
-  <div class="hero-shell" #heroShell>
-    <section class="hero" id="inicio" #hero aria-labelledby="portfolio-name">
-      <div class="contour-lines" aria-hidden="true"></div>
+  <div class="sticky-stack">
+    <div class="hero-shell" #heroShell>
+      <div class="hero-inner" #heroInner>
+        <section class="hero" id="inicio" #hero aria-labelledby="portfolio-name">
+          <div class="contour-lines" aria-hidden="true"></div>
 
-      <header class="masthead" data-reveal>
-        <a class="brand" href="#inicio" aria-label="Início">
-          <span class="brand-symbol">ED</span>
-          <span>portfolio.sys</span>
-        </a>
+          <header class="masthead" data-reveal>
+            <a class="brand" href="#inicio" aria-label="Início">
+              <span class="brand-symbol">ED</span>
+              <span>portfolio.sys</span>
+            </a>
 
-        <nav class="desktop-nav" aria-label="Navegação principal">
-          <a href="#inicio">Início</a>
-          <a href="#trajetoria">Trajetória</a>
-          <a href="#trabalhos">Trabalhos</a>
-          <a href="#contato">Contato</a>
-        </nav>
+            <nav class="desktop-nav" aria-label="Navegação principal">
+              <a href="#inicio">Início</a>
+              <a href="#trajetoria">Trajetória</a>
+              <a href="#trabalhos">Trabalhos</a>
+              <a href="#contato">Contato</a>
+            </nav>
 
-        <a class="header-cta" href="#contato">[ Fale comigo → ]</a>
-        <button class="menu-button" type="button" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen()" aria-label="Abrir menu">
-          <span></span><span></span>
-        </button>
-      </header>
+            <a class="header-cta" href="#contato">[ Fale comigo → ]</a>
+            <button
+              class="menu-button"
+              type="button"
+              (click)="toggleMenu()"
+              [attr.aria-expanded]="menuOpen()"
+              aria-label="Abrir menu"
+            >
+              <span></span><span></span>
+            </button>
+          </header>
 
-      <div class="mobile-menu" [class.is-open]="menuOpen()" [attr.aria-hidden]="!menuOpen()">
-        <button type="button" (click)="closeMenu()" aria-label="Fechar menu">×</button>
-        <nav>
-          <a href="#inicio" (click)="closeMenu()">Início</a>
-          <a href="#trajetoria" (click)="closeMenu()">Trajetória</a>
-          <a href="#trabalhos" (click)="closeMenu()">Trabalhos</a>
-          <a href="#contato" (click)="closeMenu()">Contato</a>
-        </nav>
-      </div>
-
-      <div class="hero-layout">
-        <div class="identity" data-reveal>
-          <p class="eyebrow">dev_profile / 001</p>
-          <h1 id="portfolio-name">Seu<br>nome<span>.</span></h1>
-          <ul>
-            <li><i>✦</i> Front-end developer</li>
-            <li><i>◈</i> Brasil · Remoto</li>
-            <li><i>⌁</i> Interfaces & experiências</li>
-          </ul>
-        </div>
-
-        <div
-          class="portrait-stage"
-          #portraitStage
-          (pointermove)="movePixelReveal($event)"
-          (pointerleave)="resetPixelReveal()"
-        >
-          <div class="portrait-hint"><span></span> Passe o mouse para revelar</div>
-          <img
-            #portraitImage
-            class="portrait-photo"
-            src="/images/profile-placeholder.svg"
-            alt="Substitua este retrato pela sua foto"
-            (load)="preparePixelPortrait()"
-          >
-          <canvas #pixelPortrait class="portrait-pixel" aria-hidden="true"></canvas>
-          <div class="portrait-scan" aria-hidden="true"></div>
-        </div>
-
-        <div class="hero-panels" data-reveal>
-          <article class="tech-panel">
-            <span class="corner top-left"></span><span class="corner top-right"></span><span class="corner bottom-left"></span><span class="corner bottom-right"></span>
-            <p class="eyebrow">Disponibilidade</p>
-            <strong>Aberto para projetos</strong>
-            <span>Freelance · Remoto</span>
-            <span>Resposta em até 24h</span>
-          </article>
-
-          <article class="tech-panel stats-panel">
-            <span class="corner top-left"></span><span class="corner top-right"></span><span class="corner bottom-left"></span><span class="corner bottom-right"></span>
-            <p class="eyebrow">Foco atual</p>
-            <div><strong>01</strong><span>Angular</span></div>
-            <div><strong>02</strong><span>Interfaces</span></div>
-            <div><strong>03</strong><span>Motion</span></div>
-          </article>
-        </div>
-      </div>
-
-      <div class="hero-footer" data-reveal>
-        <a href="#trajetoria" class="hero-action"><span>Explorar trajetória</span><b>→</b></a>
-        <p>Role para continuar <span></span></p>
-        <div><a href="https://github.com/IamEduardok" target="_blank" rel="noreferrer">GitHub</a><a href="#contato">LinkedIn</a></div>
-      </div>
-
-      <div class="hero-shade" aria-hidden="true"></div>
-    </section>
-  </div>
-
-  <section class="timeline" id="trajetoria" #timelineSection aria-labelledby="timeline-title">
-    <header class="timeline-heading" data-reveal>
-      <p class="eyebrow">Uma história em construção</p>
-      <h2 id="timeline-title">Da primeira linha<br>ao próximo nível<span>.</span></h2>
-    </header>
-
-    <div class="timeline-rail" aria-hidden="true">
-      <i></i>
-      <b></b>
-    </div>
-
-    <div class="timeline-list">
-      @for (entry of timeline; track entry.year) {
-        <article
-          #timelineRow
-          class="timeline-row"
-          [class.is-small]="entry.size === 'small'"
-          [class.align-left]="entry.side === 'left'"
-          [class.align-right]="entry.side === 'right'"
-          [class.align-center]="entry.side === 'center'"
-          data-reveal
-        >
-          <div class="timeline-card">
-            <svg viewBox="0 0 710 462" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M1 1H672L709 38V424L672 461H38L1 424Z"></path>
-            </svg>
-            <img [src]="entry.image" [alt]="entry.title" loading="lazy">
-            <span class="card-index">{{ $index + 1 < 10 ? '0' + ($index + 1) : $index + 1 }}</span>
+          <div class="mobile-menu" [class.is-open]="menuOpen()" [attr.aria-hidden]="!menuOpen()">
+            <button type="button" (click)="closeMenu()" aria-label="Fechar menu">×</button>
+            <nav>
+              <a href="#inicio" (click)="closeMenu()">Início</a>
+              <a href="#trajetoria" (click)="closeMenu()">Trajetória</a>
+              <a href="#trabalhos" (click)="closeMenu()">Trabalhos</a>
+              <a href="#contato" (click)="closeMenu()">Contato</a>
+            </nav>
           </div>
 
-          <time>{{ entry.year }}</time>
+          <div class="hero-layout">
+            <div class="identity" data-reveal>
+              <p class="eyebrow">dev_profile / 001</p>
+              <h1 id="portfolio-name">Seu<br />nome<span>.</span></h1>
+              <ul>
+                <li><i>✦</i> Front-end developer</li>
+                <li><i>◈</i> Brasil · Remoto</li>
+                <li><i>⌁</i> Interfaces & experiências</li>
+              </ul>
+            </div>
 
-          <p class="timeline-copy">
-            <strong>{{ entry.title }}</strong>
-            {{ entry.description }}
-          </p>
-        </article>
-      }
+            <div
+              class="portrait-stage"
+              #portraitStage
+              (pointermove)="movePixelReveal($event)"
+              (pointerleave)="resetPixelReveal()"
+            >
+              <div class="portrait-hint"><span></span> Passe o mouse para revelar</div>
+              <img
+                #portraitImage
+                class="portrait-photo"
+                src="/images/profile-placeholder.svg"
+                alt="Substitua este retrato pela sua foto"
+                (load)="preparePixelPortrait()"
+              />
+              <canvas #pixelPortrait class="portrait-pixel" aria-hidden="true"></canvas>
+              <div class="portrait-scan" aria-hidden="true"></div>
+            </div>
+
+            <div class="hero-panels" data-reveal>
+              <article class="tech-panel">
+                <span class="corner top-left"></span><span class="corner top-right"></span
+                ><span class="corner bottom-left"></span><span class="corner bottom-right"></span>
+                <p class="eyebrow">Disponibilidade</p>
+                <strong>Aberto para projetos</strong>
+                <span>Freelance · Remoto</span>
+                <span>Resposta em até 24h</span>
+              </article>
+
+              <article class="tech-panel stats-panel">
+                <span class="corner top-left"></span><span class="corner top-right"></span
+                ><span class="corner bottom-left"></span><span class="corner bottom-right"></span>
+                <p class="eyebrow">Foco atual</p>
+                <div><strong>01</strong><span>Angular</span></div>
+                <div><strong>02</strong><span>Interfaces</span></div>
+                <div><strong>03</strong><span>Motion</span></div>
+              </article>
+            </div>
+          </div>
+
+          <div class="hero-footer" data-reveal>
+            <a href="#trajetoria" class="hero-action"><span>Explorar trajetória</span><b>→</b></a>
+            <p>Role para continuar <span></span></p>
+            <div>
+              <a href="https://github.com/IamEduardok" target="_blank" rel="noreferrer">GitHub</a
+              ><a href="#contato">LinkedIn</a>
+            </div>
+          </div>
+        </section>
+        <div class="hero-shade" #heroShade aria-hidden="true"></div>
+      </div>
     </div>
-  </section>
+
+    <section class="timeline" id="trajetoria" #timelineSection aria-labelledby="timeline-title">
+      <header class="timeline-heading" data-reveal>
+        <p class="eyebrow">Uma história em construção</p>
+        <h2 id="timeline-title">Da primeira linha<br />ao próximo nível<span>.</span></h2>
+      </header>
+
+      <div class="timeline-rail" aria-hidden="true">
+        <i></i>
+        <b></b>
+      </div>
+
+      <div class="timeline-list">
+        @for (entry of timeline; track entry.year) {
+          <article
+            #timelineRow
+            class="timeline-row"
+            [class.is-small]="entry.size === 'small'"
+            [class.align-left]="entry.side === 'left'"
+            [class.align-right]="entry.side === 'right'"
+            [class.align-center]="entry.side === 'center'"
+            data-reveal
+          >
+            <div class="timeline-card">
+              <svg viewBox="0 0 710 462" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M1 1H672L709 38V424L672 461H38L1 424Z"></path>
+              </svg>
+              <img [src]="entry.image" [alt]="entry.title" loading="lazy" />
+              <span class="card-index">{{
+                $index + 1 < 10 ? '0' + ($index + 1) : $index + 1
+              }}</span>
+            </div>
+
+            <time>{{ entry.year }}</time>
+
+            <p class="timeline-copy">
+              <strong>{{ entry.title }}</strong>
+              {{ entry.description }}
+            </p>
+          </article>
+        }
+      </div>
+    </section>
+  </div>
 
   <section class="work" id="trabalhos">
     <div class="work-heading" data-reveal>
       <p class="eyebrow">O que eu faço</p>
-      <h2>Ideias que ganham<br>forma na web<span>.</span></h2>
+      <h2>Ideias que ganham<br />forma na web<span>.</span></h2>
     </div>
 
     <ul class="skills" data-reveal>
       @for (skill of skills; track skill) {
-        <li><span>{{ $index + 1 < 10 ? '0' + ($index + 1) : $index + 1 }}</span>{{ skill }}<b>↗</b></li>
+        <li>
+          <span>{{ $index + 1 < 10 ? '0' + ($index + 1) : $index + 1 }}</span
+          >{{ skill }}<b>↗</b>
+        </li>
       }
     </ul>
   </section>
 
   <section class="contact" id="contato">
     <p class="eyebrow" data-reveal>Próximo projeto</p>
-    <h2 data-reveal>Vamos criar<br>algo <span>memorável.</span></h2>
-    <a class="contact-action" href="mailto:seu-email@exemplo.com" data-reveal>Iniciar uma conversa <b>→</b></a>
+    <h2 data-reveal>Vamos criar<br />algo <span>memorável.</span></h2>
+    <a class="contact-action" href="mailto:seu-email@exemplo.com" data-reveal
+      >Iniciar uma conversa <b>→</b></a
+    >
     <footer>
       <span>© {{ year }}</span>
       <span>Brasil · Remoto</span>

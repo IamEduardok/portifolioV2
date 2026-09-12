@@ -23,6 +23,8 @@ export class App implements AfterViewInit, OnDestroy {
   @ViewChild('pixelPortrait') private pixelPortrait?: ElementRef<HTMLCanvasElement>;
   @ViewChild('portraitStage') private portraitStage?: ElementRef<HTMLElement>;
   @ViewChild('heroShell') private heroShell?: ElementRef<HTMLElement>;
+  @ViewChild('heroInner') private heroInner?: ElementRef<HTMLElement>;
+  @ViewChild('heroShade') private heroShade?: ElementRef<HTMLElement>;
   @ViewChild('hero') private hero?: ElementRef<HTMLElement>;
   @ViewChild('timelineSection') private timelineSection?: ElementRef<HTMLElement>;
   @ViewChildren('timelineRow') private timelineRows?: QueryList<ElementRef<HTMLElement>>;
@@ -36,20 +38,27 @@ export class App implements AfterViewInit, OnDestroy {
   private revealObserver?: IntersectionObserver;
   private activeRowObserver?: IntersectionObserver;
   private scrollFrame = 0;
+  private smoothFrame = 0;
+  private smoothScroll?: { raf: (time: number) => void; destroy: () => void };
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     this.observeEntrances();
     this.observeTimelineRows();
     window.addEventListener('scroll', this.onScroll, { passive: true });
+    window.addEventListener('resize', this.onScroll, { passive: true });
+    void this.startSmoothScrolling();
     this.updateScrollEffects();
   }
 
   ngOnDestroy(): void {
     if (isPlatformBrowser(this.platformId)) {
       window.removeEventListener('scroll', this.onScroll);
+      window.removeEventListener('resize', this.onScroll);
       cancelAnimationFrame(this.scrollFrame);
+      cancelAnimationFrame(this.smoothFrame);
     }
+    this.smoothScroll?.destroy();
     this.revealObserver?.disconnect();
     this.activeRowObserver?.disconnect();
   }
@@ -133,16 +142,38 @@ export class App implements AfterViewInit, OnDestroy {
     this.scrollFrame = requestAnimationFrame(() => this.updateScrollEffects());
   };
 
+  private async startSmoothScrolling(): Promise<void> {
+    if (!window.matchMedia || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const { default: Lenis } = await import('lenis');
+    const smoothScroll = new Lenis({ smoothWheel: true });
+    this.smoothScroll = smoothScroll;
+
+    const animate = (time: number) => {
+      smoothScroll.raf(time);
+      this.smoothFrame = requestAnimationFrame(animate);
+    };
+    this.smoothFrame = requestAnimationFrame(animate);
+  }
+
   private updateScrollEffects(): void {
     const shell = this.heroShell?.nativeElement;
+    const inner = this.heroInner?.nativeElement;
+    const shade = this.heroShade?.nativeElement;
     const hero = this.hero?.nativeElement;
     const timeline = this.timelineSection?.nativeElement;
 
-    if (shell && hero) {
-      const bounds = shell.getBoundingClientRect();
-      const distance = Math.max(shell.offsetHeight - window.innerHeight, 1);
-      const progress = Math.min(1, Math.max(0, -bounds.top / distance));
+    if (shell && inner && shade && hero && timeline) {
+      const viewportHeight = window.innerHeight || 1;
+      const timelineTop = timeline.getBoundingClientRect().top;
+      const progress = Math.min(1, Math.max(0, 1 - timelineTop / viewportHeight));
+      const shrink = window.matchMedia?.('(max-width: 639px)').matches ? 0 : 0.1;
+
       hero.style.setProperty('--hero-scroll', progress.toFixed(3));
+      inner.style.transform = progress > 0 && shrink > 0 ? `scale(${1 - shrink * progress})` : '';
+      inner.style.willChange = progress > 0 && shrink > 0 ? 'transform' : '';
+      inner.style.visibility = progress >= 1 ? 'hidden' : 'visible';
+      shade.style.opacity = `${0.55 * progress}`;
     }
 
     if (timeline) {
