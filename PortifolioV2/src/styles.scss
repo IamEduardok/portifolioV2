@@ -150,6 +150,7 @@ button { color: inherit; font: inherit; }
 }
 @media (max-width: 540px) {
   .hero { min-height: 780px; }
+  .hero-intro { max-width: 17rem; line-height: 1.5; }
   .hero h1 { font-size: 3.35rem; }
   .hero-side-note { display: none; }
   .project-visual { aspect-ratio: 1.05; }

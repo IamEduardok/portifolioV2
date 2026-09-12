@@ -9,7 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import * as THREE from 'three';
+import type { BufferGeometry, Group, Material, Vector2, WebGLRenderer } from 'three';
 
 interface Project {
   index: string;
@@ -67,13 +67,13 @@ export class App implements AfterViewInit, OnDestroy {
   ];
 
   private readonly platformId = inject(PLATFORM_ID);
-  private renderer?: THREE.WebGLRenderer;
+  private renderer?: WebGLRenderer;
   private animationFrame = 0;
   private resizeObserver?: ResizeObserver;
   private revealObserver?: IntersectionObserver;
-  private sceneGroup?: THREE.Group;
-  private pointer = new THREE.Vector2();
-  private pointerTarget = new THREE.Vector2();
+  private sceneGroup?: Group;
+  private pointer?: Vector2;
+  private pointerTarget?: Vector2;
   private reducedMotion = false;
 
   ngAfterViewInit(): void {
@@ -84,7 +84,7 @@ export class App implements AfterViewInit, OnDestroy {
     } else {
       document.querySelectorAll('[data-reveal]').forEach((element) => element.classList.add('is-visible'));
     }
-    if ('WebGLRenderingContext' in window) this.initThreeScene();
+    if ('WebGLRenderingContext' in window) void this.initThreeScene();
   }
 
   ngOnDestroy(): void {
@@ -95,11 +95,10 @@ export class App implements AfterViewInit, OnDestroy {
     this.resizeObserver?.disconnect();
     this.revealObserver?.disconnect();
     this.sceneGroup?.traverse((object) => {
-      if (object instanceof THREE.Mesh || object instanceof THREE.Points || object instanceof THREE.LineSegments) {
-        object.geometry.dispose();
-        const materials = Array.isArray(object.material) ? object.material : [object.material];
-        materials.forEach((material) => material.dispose());
-      }
+      const resource = object as typeof object & { geometry?: BufferGeometry; material?: Material | Material[] };
+      resource.geometry?.dispose();
+      const materials = resource.material ? (Array.isArray(resource.material) ? resource.material : [resource.material]) : [];
+      materials.forEach((material) => material.dispose());
     });
     this.renderer?.dispose();
   }
@@ -121,10 +120,12 @@ export class App implements AfterViewInit, OnDestroy {
     elements.forEach((element) => this.revealObserver?.observe(element));
   }
 
-  private initThreeScene(): void {
+  private async initThreeScene(): Promise<void> {
     const canvas = this.canvasRef?.nativeElement;
     const host = this.sceneRef?.nativeElement;
     if (!canvas || !host) return;
+
+    const THREE = await import('three');
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
@@ -146,6 +147,8 @@ export class App implements AfterViewInit, OnDestroy {
 
     const group = new THREE.Group();
     this.sceneGroup = group;
+    this.pointer = new THREE.Vector2();
+    this.pointerTarget = new THREE.Vector2();
     scene.add(group);
     const coreGeometry = new THREE.IcosahedronGeometry(1.75, 2);
     const core = new THREE.Mesh(coreGeometry, new THREE.MeshPhysicalMaterial({
@@ -209,12 +212,12 @@ export class App implements AfterViewInit, OnDestroy {
     resize();
 
     window.addEventListener('pointermove', this.onPointerMove, { passive: true });
-    const clock = new THREE.Clock();
+    const startedAt = performance.now();
     const render = () => {
-      const elapsed = clock.getElapsedTime();
-      this.pointer.lerp(this.pointerTarget, 0.045);
-      group.rotation.x += (this.pointer.y * 0.22 - group.rotation.x) * 0.035;
-      group.rotation.y += (this.pointer.x * 0.35 - group.rotation.y) * 0.035;
+      const elapsed = (performance.now() - startedAt) / 1000;
+      this.pointer?.lerp(this.pointerTarget!, 0.045);
+      group.rotation.x += ((this.pointer?.y ?? 0) * 0.22 - group.rotation.x) * 0.035;
+      group.rotation.y += ((this.pointer?.x ?? 0) * 0.35 - group.rotation.y) * 0.035;
       if (!this.reducedMotion) {
         core.rotation.y = elapsed * 0.13;
         core.rotation.z = elapsed * 0.07;
@@ -231,6 +234,6 @@ export class App implements AfterViewInit, OnDestroy {
   }
 
   private readonly onPointerMove = (event: PointerEvent): void => {
-    this.pointerTarget.set((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
+    this.pointerTarget?.set((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
   };
 }
