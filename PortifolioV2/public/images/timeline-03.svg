@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 710 462">
+  <rect width="710" height="462" fill="#0c1012"/>
+  <g transform="translate(355 231)" fill="none" stroke="#02d2e3"><path d="M0-170 147-85 147 85 0 170-147 85-147-85Z"/><path d="M0-118 102-59 102 59 0 118-102 59-102-59Z" opacity=".65"/><path d="M0-64 55-32 55 32 0 64-55 32-55-32Z" fill="#02d2e3" fill-opacity=".15"/></g>
+  <path d="M0 78h710M0 384h710" stroke="#fff" stroke-opacity=".08"/>
+  <text x="34" y="54" fill="#fff" font-family="monospace" font-size="13">PROJECT_IMAGE / 03</text>
+</svg>

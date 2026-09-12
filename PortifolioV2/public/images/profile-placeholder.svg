@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 920">
+  <defs>
+    <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c7cfd0"/><stop offset="1" stop-color="#818b8d"/></linearGradient>
+    <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#20262a"/><stop offset="1" stop-color="#090b0c"/></linearGradient>
+    <radialGradient id="light"><stop stop-color="#02d2e3" stop-opacity=".22"/><stop offset="1" stop-color="#02d2e3" stop-opacity="0"/></radialGradient>
+    <filter id="grain"><feTurbulence baseFrequency=".8" numOctaves="3" stitchTiles="stitch"/><feColorMatrix values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .08 0"/><feBlend in="SourceGraphic" mode="multiply"/></filter>
+  </defs>
+  <circle cx="360" cy="420" r="300" fill="url(#light)"/>
+  <path d="M72 920c13-174 85-287 216-338 22-9 34-28 34-57v-49h77v49c0 29 12 48 35 57 132 51 203 164 214 338Z" fill="url(#shirt)"/>
+  <path d="M234 282c5-135 58-203 129-203 86 0 137 72 130 210l-17 134c-8 69-52 123-113 123-62 0-105-54-114-123Z" fill="url(#skin)" filter="url(#grain)"/>
+  <path d="M230 307c-14-99 2-178 57-218 59-44 145-25 189 37 20 29 29 63 22 103-32-10-59-30-80-61-34 54-96 92-188 114Z" fill="#14191c"/>
+  <path d="M253 358c19-12 43-14 67-4M406 354c23-9 45-6 62 7" fill="none" stroke="#4c5558" stroke-width="10" stroke-linecap="round"/>
+  <path d="M330 450c21 14 43 14 65 0" fill="none" stroke="#657073" stroke-width="8" stroke-linecap="round"/>
+  <path d="M181 920c22-119 72-208 148-267l34 73 35-73c79 61 130 150 149 267Z" fill="#111619"/>
+  <path d="M329 653l34 73 35-73" fill="none" stroke="#02d2e3" stroke-width="4"/>
+</svg>

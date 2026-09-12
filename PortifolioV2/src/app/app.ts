@@ -1,239 +1,155 @@
+import { isPlatformBrowser } from '@angular/common';
 import {
   AfterViewInit,
   Component,
   ElementRef,
   OnDestroy,
   PLATFORM_ID,
+  QueryList,
   ViewChild,
+  ViewChildren,
   inject,
   signal,
 } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import type { BufferGeometry, Group, Material, Vector2, WebGLRenderer } from 'three';
-
-interface Project {
-  index: string;
-  title: string;
-  category: string;
-  description: string;
-  stack: string[];
-  accent: string;
-  shape: 'orb' | 'prism' | 'portal';
-}
+import { SKILLS, TIMELINE } from './portfolio.data';
 
 @Component({
   selector: 'app-root',
-  styleUrl: './app.scss',
   templateUrl: './app.html',
+  styleUrl: './app.scss',
 })
 export class App implements AfterViewInit, OnDestroy {
-  @ViewChild('heroCanvas') private canvasRef?: ElementRef<HTMLCanvasElement>;
-  @ViewChild('heroScene') private sceneRef?: ElementRef<HTMLElement>;
+  @ViewChild('portraitImage') private portraitImage?: ElementRef<HTMLImageElement>;
+  @ViewChild('pixelPortrait') private pixelPortrait?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('portraitStage') private portraitStage?: ElementRef<HTMLElement>;
+  @ViewChild('heroShell') private heroShell?: ElementRef<HTMLElement>;
+  @ViewChild('hero') private hero?: ElementRef<HTMLElement>;
+  @ViewChild('timelineSection') private timelineSection?: ElementRef<HTMLElement>;
+  @ViewChildren('timelineRow') private timelineRows?: QueryList<ElementRef<HTMLElement>>;
 
   protected readonly menuOpen = signal(false);
+  protected readonly timeline = TIMELINE;
+  protected readonly skills = SKILLS;
   protected readonly year = new Date().getFullYear();
-  protected readonly projects: Project[] = [
-    {
-      index: '01',
-      title: 'Nexus Finance',
-      category: 'Fintech / Product',
-      description: 'Dashboard financeiro que transforma dados complexos em decisões rápidas e visuais.',
-      stack: ['Angular', 'TypeScript', 'Charts'],
-      accent: '#00e5ff',
-      shape: 'orb',
-    },
-    {
-      index: '02',
-      title: 'Atlas Commerce',
-      category: 'E-commerce / Experience',
-      description: 'Experiência de compra modular, veloz e pensada para converter em qualquer tela.',
-      stack: ['Angular', 'SSR', 'Design system'],
-      accent: '#ff6b35',
-      shape: 'prism',
-    },
-    {
-      index: '03',
-      title: 'Pulse Studio',
-      category: 'Creative / Immersive',
-      description: 'Site imersivo para um estúdio criativo, unindo movimento, som e narrativa digital.',
-      stack: ['Three.js', 'WebGL', 'Motion'],
-      accent: '#b7ff3c',
-      shape: 'portal',
-    },
-  ];
-
-  protected readonly skills = [
-    'Angular', 'TypeScript', 'Three.js', 'WebGL', 'Node.js', 'UI Engineering', 'Motion Design', 'Design Systems',
-  ];
 
   private readonly platformId = inject(PLATFORM_ID);
-  private renderer?: WebGLRenderer;
-  private animationFrame = 0;
-  private resizeObserver?: ResizeObserver;
   private revealObserver?: IntersectionObserver;
-  private sceneGroup?: Group;
-  private pointer?: Vector2;
-  private pointerTarget?: Vector2;
-  private reducedMotion = false;
+  private activeRowObserver?: IntersectionObserver;
+  private scrollFrame = 0;
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    this.reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-    if ('IntersectionObserver' in window) {
-      this.initReveals();
-    } else {
-      document.querySelectorAll('[data-reveal]').forEach((element) => element.classList.add('is-visible'));
-    }
-    if ('WebGLRenderingContext' in window) void this.initThreeScene();
+    this.observeEntrances();
+    this.observeTimelineRows();
+    window.addEventListener('scroll', this.onScroll, { passive: true });
+    this.updateScrollEffects();
   }
 
   ngOnDestroy(): void {
     if (isPlatformBrowser(this.platformId)) {
-      cancelAnimationFrame(this.animationFrame);
-      window.removeEventListener('pointermove', this.onPointerMove);
+      window.removeEventListener('scroll', this.onScroll);
+      cancelAnimationFrame(this.scrollFrame);
     }
-    this.resizeObserver?.disconnect();
     this.revealObserver?.disconnect();
-    this.sceneGroup?.traverse((object) => {
-      const resource = object as typeof object & { geometry?: BufferGeometry; material?: Material | Material[] };
-      resource.geometry?.dispose();
-      const materials = resource.material ? (Array.isArray(resource.material) ? resource.material : [resource.material]) : [];
-      materials.forEach((material) => material.dispose());
-    });
-    this.renderer?.dispose();
+    this.activeRowObserver?.disconnect();
   }
 
-  protected toggleMenu(): void { this.menuOpen.update((open) => !open); }
-  protected closeMenu(): void { this.menuOpen.set(false); }
-  protected trackProject(_: number, project: Project): string { return project.index; }
+  protected toggleMenu(): void {
+    this.menuOpen.update((open) => !open);
+  }
 
-  private initReveals(): void {
+  protected closeMenu(): void {
+    this.menuOpen.set(false);
+  }
+
+  protected preparePixelPortrait(): void {
+    const image = this.portraitImage?.nativeElement;
+    const canvas = this.pixelPortrait?.nativeElement;
+    if (!image || !canvas) return;
+
+    const context = canvas.getContext('2d');
+    if (!context) return;
+
+    canvas.width = 72;
+    canvas.height = 88;
+    context.imageSmoothingEnabled = false;
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  }
+
+  protected movePixelReveal(event: PointerEvent): void {
+    const stage = this.portraitStage?.nativeElement;
+    if (!stage) return;
+
+    const bounds = stage.getBoundingClientRect();
+    stage.style.setProperty('--mouse-x', `${event.clientX - bounds.left}px`);
+    stage.style.setProperty('--mouse-y', `${event.clientY - bounds.top}px`);
+    stage.style.setProperty('--portrait-rotate-y', `${((event.clientX - bounds.left) / bounds.width - 0.5) * 7}deg`);
+    stage.style.setProperty('--portrait-rotate-x', `${-((event.clientY - bounds.top) / bounds.height - 0.5) * 5}deg`);
+    stage.classList.add('is-hovered');
+  }
+
+  protected resetPixelReveal(): void {
+    const stage = this.portraitStage?.nativeElement;
+    if (!stage) return;
+    stage.classList.remove('is-hovered');
+    stage.style.setProperty('--portrait-rotate-y', '0deg');
+    stage.style.setProperty('--portrait-rotate-x', '0deg');
+  }
+
+  private observeEntrances(): void {
     const elements = document.querySelectorAll<HTMLElement>('[data-reveal]');
-    this.revealObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
+    if (!('IntersectionObserver' in window)) {
+      elements.forEach((element) => element.classList.add('is-visible'));
+      return;
+    }
+
+    this.revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
           entry.target.classList.add('is-visible');
           this.revealObserver?.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.12 });
+        });
+      },
+      { rootMargin: '0px 0px -12% 0px', threshold: 0.08 },
+    );
     elements.forEach((element) => this.revealObserver?.observe(element));
   }
 
-  private async initThreeScene(): Promise<void> {
-    const canvas = this.canvasRef?.nativeElement;
-    const host = this.sceneRef?.nativeElement;
-    if (!canvas || !host) return;
+  private observeTimelineRows(): void {
+    if (!('IntersectionObserver' in window)) return;
 
-    const THREE = await import('three');
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
-    camera.position.set(0, 0, 9);
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
-    this.renderer = renderer;
-
-    scene.add(new THREE.AmbientLight(0xdffaff, 1.5));
-    const keyLight = new THREE.PointLight(0x00e5ff, 45, 30);
-    keyLight.position.set(3, 4, 5);
-    scene.add(keyLight);
-    const rimLight = new THREE.PointLight(0x6246ea, 35, 25);
-    rimLight.position.set(-5, -2, 2);
-    scene.add(rimLight);
-
-    const group = new THREE.Group();
-    this.sceneGroup = group;
-    this.pointer = new THREE.Vector2();
-    this.pointerTarget = new THREE.Vector2();
-    scene.add(group);
-    const coreGeometry = new THREE.IcosahedronGeometry(1.75, 2);
-    const core = new THREE.Mesh(coreGeometry, new THREE.MeshPhysicalMaterial({
-      color: 0x11161a, metalness: 0.82, roughness: 0.18, clearcoat: 1, clearcoatRoughness: 0.14,
-    }));
-    group.add(core);
-    const edges = new THREE.LineSegments(
-      new THREE.EdgesGeometry(coreGeometry, 18),
-      new THREE.LineBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.72 }),
+    this.activeRowObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => entry.target.classList.toggle('is-current', entry.isIntersecting));
+      },
+      { rootMargin: '-38% 0px -38% 0px', threshold: 0 },
     );
-    edges.scale.setScalar(1.008);
-    group.add(edges);
-
-    [2.35, 2.75].forEach((radius, index) => {
-      const ring = new THREE.Mesh(
-        new THREE.TorusGeometry(radius, 0.018, 8, 160),
-        new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.58, side: THREE.DoubleSide }),
-      );
-      ring.rotation.set(Math.PI / (2.8 + index), index * 0.8, index * 0.45);
-      ring.userData['speed'] = index === 0 ? 0.22 : -0.14;
-      group.add(ring);
-    });
-
-    const satelliteMaterial = new THREE.MeshStandardMaterial({
-      color: 0xeef7f8, emissive: 0x006674, emissiveIntensity: 0.45, metalness: 0.55, roughness: 0.25,
-    });
-    const satelliteGeometry = new THREE.OctahedronGeometry(0.19, 0);
-    for (let index = 0; index < 5; index++) {
-      const angle = (index / 5) * Math.PI * 2;
-      const satellite = new THREE.Mesh(satelliteGeometry, satelliteMaterial);
-      satellite.position.set(Math.cos(angle) * 2.65, Math.sin(angle * 1.4) * 1.15, Math.sin(angle) * 1.25);
-      group.add(satellite);
-    }
-
-    const particleGeometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(210 * 3);
-    for (let index = 0; index < positions.length; index += 3) {
-      const radius = 3.2 + Math.random() * 2.8;
-      const angle = Math.random() * Math.PI * 2;
-      positions[index] = Math.cos(angle) * radius;
-      positions[index + 1] = (Math.random() - 0.5) * 6;
-      positions[index + 2] = Math.sin(angle) * radius - 1;
-    }
-    particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    const particles = new THREE.Points(
-      particleGeometry,
-      new THREE.PointsMaterial({ color: 0x00e5ff, size: 0.026, transparent: true, opacity: 0.55 }),
-    );
-    scene.add(particles);
-
-    const resize = () => {
-      const { width, height } = host.getBoundingClientRect();
-      renderer.setSize(width, height, false);
-      camera.aspect = width / Math.max(height, 1);
-      camera.updateProjectionMatrix();
-      group.scale.setScalar(width < 720 ? 0.72 : 1);
-      group.position.y = width < 720 ? -0.35 : 0;
-    };
-    this.resizeObserver = new ResizeObserver(resize);
-    this.resizeObserver.observe(host);
-    resize();
-
-    window.addEventListener('pointermove', this.onPointerMove, { passive: true });
-    const startedAt = performance.now();
-    const render = () => {
-      const elapsed = (performance.now() - startedAt) / 1000;
-      this.pointer?.lerp(this.pointerTarget!, 0.045);
-      group.rotation.x += ((this.pointer?.y ?? 0) * 0.22 - group.rotation.x) * 0.035;
-      group.rotation.y += ((this.pointer?.x ?? 0) * 0.35 - group.rotation.y) * 0.035;
-      if (!this.reducedMotion) {
-        core.rotation.y = elapsed * 0.13;
-        core.rotation.z = elapsed * 0.07;
-        edges.rotation.copy(core.rotation);
-        particles.rotation.y = elapsed * -0.025;
-        group.children.forEach((child) => {
-          if (child.userData['speed']) child.rotation.z = elapsed * child.userData['speed'];
-        });
-      }
-      renderer.render(scene, camera);
-      this.animationFrame = requestAnimationFrame(render);
-    };
-    render();
+    this.timelineRows?.forEach((row) => this.activeRowObserver?.observe(row.nativeElement));
   }
 
-  private readonly onPointerMove = (event: PointerEvent): void => {
-    this.pointerTarget?.set((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
+  private readonly onScroll = (): void => {
+    cancelAnimationFrame(this.scrollFrame);
+    this.scrollFrame = requestAnimationFrame(() => this.updateScrollEffects());
   };
+
+  private updateScrollEffects(): void {
+    const shell = this.heroShell?.nativeElement;
+    const hero = this.hero?.nativeElement;
+    const timeline = this.timelineSection?.nativeElement;
+
+    if (shell && hero) {
+      const bounds = shell.getBoundingClientRect();
+      const distance = Math.max(shell.offsetHeight - window.innerHeight, 1);
+      const progress = Math.min(1, Math.max(0, -bounds.top / distance));
+      hero.style.setProperty('--hero-scroll', progress.toFixed(3));
+    }
+
+    if (timeline) {
+      const bounds = timeline.getBoundingClientRect();
+      const distance = bounds.height + window.innerHeight;
+      const progress = Math.min(1, Math.max(0, (window.innerHeight - bounds.top) / distance));
+      timeline.style.setProperty('--timeline-progress', progress.toFixed(3));
+    }
+  }
 }
