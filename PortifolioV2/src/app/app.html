@@ -43,10 +43,10 @@
           <div class="hero-layout">
             <div class="identity" data-reveal>
               <p class="eyebrow">dev_profile / 001</p>
-              <h1 id="portfolio-name">Seu<br />nome<span>.</span></h1>
+              <h1 id="portfolio-name">José<br />Eduardo<span>.</span></h1>
               <ul>
-                <li><i>✦</i> Front-end developer</li>
-                <li><i>◈</i> Brasil · Remoto</li>
+                <li><i>✦</i> Full Stack developer</li>
+                <li><i>◈</i> Brasil · Hibrido</li>
                 <li><i>⌁</i> Interfaces & experiências</li>
               </ul>
             </div>
@@ -153,11 +153,55 @@
       <h2>Ideias que ganham<br />forma na web<span>.</span></h2>
     </div>
 
-    <ul class="skills" data-reveal>
-      @for (skill of skills; track skill) {
-        <li>
-          <span>{{ $index + 1 < 10 ? '0' + ($index + 1) : $index + 1 }}</span
-          >{{ skill }}<b>↗</b>
+    <ul class="skills" data-reveal aria-label="Áreas de atuação">
+      @for (skill of skills; track skill.title) {
+        <li
+          class="skill-item"
+          [class.is-open]="isSkillOpen($index)"
+          (mouseenter)="showSkill($index)"
+          (mouseleave)="hideSkill($index)"
+        >
+          <button
+            class="skill-trigger"
+            type="button"
+            (click)="toggleSkill($index)"
+            (focus)="showSkill($index)"
+            (blur)="hideSkill($index)"
+            [attr.aria-expanded]="isSkillOpen($index)"
+            [attr.aria-controls]="'skill-detail-' + $index"
+          >
+            <span>{{ $index + 1 < 10 ? '0' + ($index + 1) : $index + 1 }}</span>
+            <strong>{{ skill.title }}</strong>
+            <b aria-hidden="true">↗</b>
+          </button>
+
+          <div
+            class="skill-detail"
+            [id]="'skill-detail-' + $index"
+            [attr.aria-hidden]="!isSkillOpen($index)"
+          >
+            <div class="skill-detail-inner">
+              <div class="skill-media">
+                @if (skill.media.type === 'video') {
+                  <video
+                    [src]="skill.media.src"
+                    [poster]="skill.media.poster || ''"
+                    muted
+                    loop
+                    playsinline
+                    controls
+                  ></video>
+                } @else {
+                  <img [src]="skill.media.src" [alt]="skill.media.alt" loading="lazy" />
+                }
+                <span>media / {{ $index + 1 < 10 ? '0' + ($index + 1) : $index + 1 }}</span>
+              </div>
+              <div class="skill-copy">
+                <p>{{ skill.description }}</p>
+                <small>Imagem ou vídeo do projeto</small>
+              </div>
+            </div>
+          </div>
         </li>
       }
     </ul>

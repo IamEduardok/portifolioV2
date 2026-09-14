@@ -7,6 +7,17 @@ export interface TimelineEntry {
   side: 'left' | 'right' | 'center';
 }
 
+export interface SkillEntry {
+  title: string;
+  description: string;
+  media: {
+    type: 'image' | 'video';
+    src: string;
+    poster?: string;
+    alt: string;
+  };
+}
+
 export const TIMELINE: TimelineEntry[] = [
   {
     year: '2020',
@@ -58,4 +69,35 @@ export const TIMELINE: TimelineEntry[] = [
   },
 ];
 
-export const SKILLS = ['Angular', 'TypeScript', 'Interfaces', 'Motion', 'APIs', 'Experiências web'];
+export const SKILLS: SkillEntry[] = [
+  {
+    title: 'Angular',
+    description: 'Aplicações modernas, escaláveis e organizadas para crescer junto com o produto.',
+    media: { type: 'image', src: '/images/timeline-01.svg', alt: 'Projeto desenvolvido com Angular' },
+  },
+  {
+    title: 'TypeScript',
+    description: 'Código seguro e previsível para experiências mais estáveis e fáceis de evoluir.',
+    media: { type: 'image', src: '/images/timeline-02.svg', alt: 'Código e arquitetura em TypeScript' },
+  },
+  {
+    title: 'Interfaces',
+    description: 'Interfaces claras e responsivas que conectam identidade, conteúdo e usabilidade.',
+    media: { type: 'image', src: '/images/timeline-03.svg', alt: 'Interface digital responsiva' },
+  },
+  {
+    title: 'Motion',
+    description: 'Movimentos com propósito, criando ritmo, contexto e personalidade em cada interação.',
+    media: { type: 'image', src: '/images/timeline-01.svg', alt: 'Estudo de movimento para interface' },
+  },
+  {
+    title: 'APIs',
+    description: 'Integrações eficientes que fazem produtos, serviços e dados trabalharem em conjunto.',
+    media: { type: 'image', src: '/images/timeline-02.svg', alt: 'Integração entre serviços por API' },
+  },
+  {
+    title: 'Experiências web',
+    description: 'Produtos digitais completos, rápidos e memoráveis do primeiro contato ao deploy.',
+    media: { type: 'image', src: '/images/timeline-03.svg', alt: 'Experiência web completa' },
+  },
+];

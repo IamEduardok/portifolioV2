@@ -32,6 +32,8 @@ export class App implements AfterViewInit, OnDestroy {
   protected readonly menuOpen = signal(false);
   protected readonly timeline = TIMELINE;
   protected readonly skills = SKILLS;
+  protected readonly hoveredSkill = signal<number | null>(null);
+  protected readonly selectedSkill = signal<number | null>(null);
   protected readonly year = new Date().getFullYear();
 
   private readonly platformId = inject(PLATFORM_ID);
@@ -69,6 +71,23 @@ export class App implements AfterViewInit, OnDestroy {
 
   protected closeMenu(): void {
     this.menuOpen.set(false);
+  }
+
+  protected showSkill(index: number): void {
+    this.hoveredSkill.set(index);
+  }
+
+  protected hideSkill(index: number): void {
+    if (this.hoveredSkill() === index) this.hoveredSkill.set(null);
+  }
+
+  protected toggleSkill(index: number): void {
+    this.hoveredSkill.set(null);
+    this.selectedSkill.update((selected) => (selected === index ? null : index));
+  }
+
+  protected isSkillOpen(index: number): boolean {
+    return this.hoveredSkill() === index || (this.hoveredSkill() === null && this.selectedSkill() === index);
   }
 
   protected preparePixelPortrait(): void {
