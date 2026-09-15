@@ -54,18 +54,21 @@
             <div
               class="portrait-stage"
               #portraitStage
-              (pointermove)="movePixelReveal($event)"
-              (pointerleave)="resetPixelReveal()"
+              (pointermove)="movePortraitReveal($event)"
+              (pointerleave)="resetPortraitReveal()"
             >
               <div class="portrait-hint"><span></span> Passe o mouse para revelar</div>
               <img
-                #portraitImage
                 class="portrait-photo"
-                src="/images/fotoProfissonal.jpg"
+                src="/images/foto-profissional-recortada.png"
                 alt="Foto profissional de Eduardo"
-                (load)="preparePixelPortrait()"
               />
-              <canvas #pixelPortrait class="portrait-pixel" aria-hidden="true"></canvas>
+              <img
+                class="portrait-cartoon"
+                src="/images/imagem-cartoon-recortada.png"
+                alt=""
+                aria-hidden="true"
+              />
               <div class="portrait-scan" aria-hidden="true"></div>
             </div>
 

@@ -19,8 +19,6 @@ import { SKILLS, TIMELINE } from './portfolio.data';
   styleUrl: './app.scss',
 })
 export class App implements AfterViewInit, OnDestroy {
-  @ViewChild('portraitImage') private portraitImage?: ElementRef<HTMLImageElement>;
-  @ViewChild('pixelPortrait') private pixelPortrait?: ElementRef<HTMLCanvasElement>;
   @ViewChild('portraitStage') private portraitStage?: ElementRef<HTMLElement>;
   @ViewChild('heroShell') private heroShell?: ElementRef<HTMLElement>;
   @ViewChild('heroInner') private heroInner?: ElementRef<HTMLElement>;
@@ -90,50 +88,7 @@ export class App implements AfterViewInit, OnDestroy {
     return this.hoveredSkill() === index || (this.hoveredSkill() === null && this.selectedSkill() === index);
   }
 
-  protected preparePixelPortrait(): void {
-    const image = this.portraitImage?.nativeElement;
-    const canvas = this.pixelPortrait?.nativeElement;
-    if (!image || !canvas) return;
-
-    const context = canvas.getContext('2d');
-    if (!context) return;
-
-    const stage = this.portraitStage?.nativeElement;
-    const pixelWidth = 84;
-    const stageRatio = stage ? stage.clientWidth / stage.clientHeight : 0.82;
-    const pixelHeight = Math.round(pixelWidth / stageRatio);
-    const imageRatio = image.naturalWidth / image.naturalHeight;
-    const canvasRatio = pixelWidth / pixelHeight;
-    let sourceX = 0;
-    let sourceY = 0;
-    let sourceWidth = image.naturalWidth;
-    let sourceHeight = image.naturalHeight;
-
-    if (imageRatio > canvasRatio) {
-      sourceWidth = image.naturalHeight * canvasRatio;
-      sourceX = (image.naturalWidth - sourceWidth) * 0.52;
-    } else {
-      sourceHeight = image.naturalWidth / canvasRatio;
-      sourceY = (image.naturalHeight - sourceHeight) * 0.5;
-    }
-
-    canvas.width = pixelWidth;
-    canvas.height = pixelHeight;
-    context.imageSmoothingEnabled = false;
-    context.drawImage(
-      image,
-      sourceX,
-      sourceY,
-      sourceWidth,
-      sourceHeight,
-      0,
-      0,
-      canvas.width,
-      canvas.height,
-    );
-  }
-
-  protected movePixelReveal(event: PointerEvent): void {
+  protected movePortraitReveal(event: PointerEvent): void {
     const stage = this.portraitStage?.nativeElement;
     if (!stage) return;
 
@@ -145,7 +100,7 @@ export class App implements AfterViewInit, OnDestroy {
     stage.classList.add('is-hovered');
   }
 
-  protected resetPixelReveal(): void {
+  protected resetPortraitReveal(): void {
     const stage = this.portraitStage?.nativeElement;
     if (!stage) return;
     stage.classList.remove('is-hovered');
